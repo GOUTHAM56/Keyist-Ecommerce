@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
- name: ecom-app-res-svc
+ name: resource_server
  labels:
-   app: ecom-res
+   app: resource_server
 spec:
  ports:
  - port: 8080

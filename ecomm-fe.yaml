@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
- name: ecom-app-fe-svc
+ name: client
  labels:
-   app: ecom-fe
+   app: client
 spec:
  type: NodePort
  ports:

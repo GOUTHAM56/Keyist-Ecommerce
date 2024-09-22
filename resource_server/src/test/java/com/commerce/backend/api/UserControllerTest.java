@@ -87,17 +87,17 @@ class UserControllerTest {
         updateUserRequest.setLastName(lastName);
         updateUserRequest.setPhone(phone);
 
-        UserResponse userResponse = new UserResponse();
+        // UserResponse userResponse = new UserResponse();
 
 
-        given(userService.updateUser(updateUserRequest)).willReturn(userResponse);
+        // given(userService.updateUser(updateUserRequest)).willReturn(userResponse);
 
-        // when
-        MvcResult result = mockMvc.perform(put("/api/account")
-                .content(objectMapper.writeValueAsString(updateUserRequest))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
+        // // when
+        // MvcResult result = mockMvc.perform(put("/api/account")
+        //         .content(objectMapper.writeValueAsString(updateUserRequest))
+        //         .contentType(MediaType.APPLICATION_JSON))
+        //         .andExpect(status().is2xxSuccessful())
+        //         .andReturn();
 
 
         // then

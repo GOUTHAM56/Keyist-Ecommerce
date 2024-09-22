@@ -30,6 +30,6 @@ spec:
    spec:
      containers:
      - name: keyist-feserver
-       image: keyist-client:latest
+       image: gouthamrajen/client:latest
        ports:
        - containerPort: 80

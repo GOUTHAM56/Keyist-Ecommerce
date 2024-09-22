@@ -31,3 +31,12 @@ spec:
        image: mysql
        ports:
        - containerPort: 3306
+       env:
+       - name: MYSQL_DATABASE
+         value: keyist
+       - name: MYSQL_ROOT_PASSWORD
+         value: root
+       - name: MYSQL_USER
+         value: keyistuser
+       - name: MYSQL_PASSWORD
+         value: keyistpassword

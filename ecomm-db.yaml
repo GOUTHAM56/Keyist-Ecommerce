@@ -36,7 +36,3 @@ spec:
          value: keyist
        - name: MYSQL_ROOT_PASSWORD
          value: root
-       - name: MYSQL_USER
-         value: keyistuser
-       - name: MYSQL_PASSWORD
-         value: keyistpassword

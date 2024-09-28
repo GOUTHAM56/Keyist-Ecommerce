@@ -187,13 +187,13 @@ post {
       </body>
       </html>"""
       emailext (
-      subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
-      body: body,
-      to: 'gouthamrjn@gmail.com',
-      from: 'jenkins@example.com',
-      replyTo: 'jenkins@example.com',
-      mimeType: 'text/html',
-      attachmentsPattern: 'scan.txt'
+        subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+        body: body,
+        to: 'gouthamrjn@gmail.com',
+        from: 'jenkins@example.com',
+        replyTo: 'jenkins@example.com',
+        mimeType: 'text/html',
+        attachmentsPattern: 'scan*.txt'
       )
     }
   }

@@ -1,7 +1,7 @@
 // JENKINS CD PIPELINE
 // Here the image stored in Dockerhub will be deployed using K8s
 // IMP NOTE: Store your EC2 instance username & key in Jenkins credentials
-
+// comment
 pipeline {
     agent any
     // DECLARE THE VARIABLES HERE:

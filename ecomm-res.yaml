@@ -6,7 +6,7 @@ metadata:
    app: resource-server
 spec:
  ports:
- - port: 8080
+ - port: 8082
  selector:
    app: ecom-res
 ---
@@ -30,7 +30,7 @@ spec:
      - name: keyist-resserver
        image: gouthamrajen/resource_server:latest
        ports:
-       - containerPort: 8080
+       - containerPort: 8082
        env:
        - name: SPRING_DATASOURCE_URL
          value: jdbc:mysql://mysql:3306/keyist?useSSL=false&useUnicode=yes&characterEncoding=UTF-8&allowPublicKeyRetrieval=true

@@ -1,0 +1,202 @@
+pipeline {
+    agent any
+    // DECLARE THE VARIABLES HERE:
+    environment {
+        DOCKER_USERNAME = "gouthamrajen"     // check the 'ID' in your Jenkins credentials
+    }
+
+    stages {
+        stage("1. Cleanup") {
+            // Clean workspace directory for the current build
+            steps {
+                deleteDir ()             
+            }
+        }
+
+        stage ('2. Git Checkout') {
+            // use pipeline syntax generator to generate below step
+            // 'Pipeline syntax' --> Steps 'Smaple step' --> git (enter url & branch & generate)
+            steps {
+                dir ("Keyist-Ecommerce"){
+                  script {
+                    git branch: 'master', url: 'https://github.com/GOUTHAM56/Keyist-Ecommerce.git' 
+                  }
+                }
+            }
+        }   
+        
+        stage("3. Maven Unit Test") {  
+            // Test the individual units of code 
+            steps{
+                dir ("Keyist-Ecommerce/authorization_server/"){
+                  sh 'mvn test'        
+                }
+                dir ("Keyist-Ecommerce/resource_server/"){
+                  sh 'mvn test'        
+                }
+            }
+        }
+
+        stage('4. Maven Build') {
+            // Build the application into an executable file (.jar)
+            steps{
+                dir ("Keyist-Ecommerce/authorization_server/"){
+                  sh 'mvn clean install'   
+                }
+                dir ("Keyist-Ecommerce/resource_server/"){
+                  sh 'mvn clean install'   
+                }
+            }
+        }
+
+        stage("5. Maven Integration Test") {
+            //  Test the interaction between different units of code
+            steps{
+                dir ("Keyist-Ecommerce/authorization_server/"){
+                  sh 'mvn verify'          
+                }
+                dir ("Keyist-Ecommerce/resource_server/"){
+                  sh 'mvn verify'          
+                }
+            }
+        }
+
+        stage('6. Docker Image Build') {
+            // Build Docker Image 
+            steps{
+                dir('Keyist-Ecommerce/authorization_server/') {      // go to directory where 'Dockerfile' is stored
+                    script {
+                      def JOB = env.JOB_NAME.toLowerCase()           // Convert Jenkins Job name to lower-case
+                      sh "docker build -t authorization_server-${JOB}:${BUILD_NUMBER} ."  // 'JOB_NAME' & 'BUILD_NUMBER' are Jenkins Global variable
+                    }
+                }
+                
+                dir('Keyist-Ecommerce/resource_server/') {      // go to directory where 'Dockerfile' is stored
+                    script {
+                      def JOB = env.JOB_NAME.toLowerCase()           // Convert Jenkins Job name to lower-case
+                      sh "docker build -t resource_server-${JOB}:${BUILD_NUMBER} ."  // 'JOB_NAME' & 'BUILD_NUMBER' are Jenkins Global variable
+                    }
+                }
+                
+                dir('Keyist-Ecommerce/client/') {      // go to directory where 'Dockerfile' is stored
+                    script {
+                      def JOB = env.JOB_NAME.toLowerCase()           // Convert Jenkins Job name to lower-case
+                      sh "docker build -t client-${JOB}:${BUILD_NUMBER} ."  // 'JOB_NAME' & 'BUILD_NUMBER' are Jenkins Global variable
+                    }
+                }
+            }
+        }
+        
+        stage('7. Docker Image Tag') {
+            // Rename the Docker Image before pushing to Dockerhub
+            steps{
+                dir('Keyist-Ecommerce/authorization_server/') {      // go to directory where Docker Image is created
+                  script {
+                    def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                    sh "docker tag authorization_server-${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/authorization_server:v${BUILD_NUMBER}"
+                    sh "docker tag authorization_server-${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/authorization_server:latest"
+                  }
+                }
+                dir('Keyist-Ecommerce/resource_server/') {      // go to directory where Docker Image is created
+                  script {
+                    def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                    sh "docker tag resource_server-${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/resource_server:v${BUILD_NUMBER}"
+                    sh "docker tag resource_server-${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/resource_server:latest"
+                  }
+                }
+                dir('Keyist-Ecommerce/client/') {      // go to directory where Docker Image is created
+                  script {
+                    def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                    sh "docker tag client-${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/client:v${BUILD_NUMBER}"
+                    sh "docker tag client-${JOB}:${BUILD_NUMBER} ${DOCKER_USERNAME}/client:latest"
+                  }
+                }
+            } 
+        }
+
+        stage('8. Trivy Image Scan') {
+            // Scan Docker images for vulnerabilities 
+            steps{
+                script { 
+                  def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                  sh "trivy image ${DOCKER_USERNAME}/authorization_server:v${BUILD_NUMBER} > scan.txt"
+                }
+                script { 
+                  def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                  sh "trivy image ${DOCKER_USERNAME}/resource_server:v${BUILD_NUMBER} > scan2.txt"
+                }
+            }
+        }
+
+        stage('9. Docker Image Push') {
+            // Login to Dockerhub & Push the image to Dockerhub
+            steps{
+                script { 
+                  withCredentials([usernamePassword(credentialsId: 'my_dockerhub_creds', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
+                    sh "docker login -u '${docker_user}' -p '${docker_pass}'"
+                    def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                    sh "docker push ${DOCKER_USERNAME}/authorization_server:v${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_USERNAME}/authorization_server:latest"
+                  }
+                }
+                script { 
+                  withCredentials([usernamePassword(credentialsId: 'my_dockerhub_creds', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
+                    sh "docker login -u '${docker_user}' -p '${docker_pass}'"
+                    def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                    sh "docker push ${DOCKER_USERNAME}/resource_server:v${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_USERNAME}/resource_server:latest"
+                  }
+                }
+                script { 
+                  withCredentials([usernamePassword(credentialsId: 'my_dockerhub_creds', usernameVariable: 'docker_user', passwordVariable: 'docker_pass')]) {
+                    sh "docker login -u '${docker_user}' -p '${docker_pass}'"
+                    def JOB = env.JOB_NAME.toLowerCase() // Convert Jenkins Job name to lower-case
+                    sh "docker push ${DOCKER_USERNAME}/client:v${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_USERNAME}/client:latest"
+                  }
+                }
+            }
+        }
+
+        stage('10. Docker Image Cleanup') {
+            // Remove the unwanted (dangling) images created in Jenkins Server to free-up space
+            steps{
+                script { 
+                  sh "docker image prune -af"
+                }
+            }
+        }
+    }
+post {
+  always {
+    script {
+      def jobName = env.JOB_NAME
+      def buildNumber = env.BUILD_NUMBER
+      def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+      def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' :
+        'red'
+      def body = """<html>  
+      <body >
+        <div style = "border: 4px solid ${bannerColor}; padding: 10 px;">
+          <h2>${jobName} - Build ${buildNumber}</h2>
+          <div style="background-color: ${bannerColor}; padding: 10px;">
+           <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3>
+          </div>
+          <p>Check the <a href="${BUILD_URL}">console output</a>.</p>
+        </div>
+      </body>
+      </html>"""
+      emailext (
+      subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+      body: body,
+      to: 'gouthamrjn@gmail.com',
+      from: 'jenkins@example.com',
+      replyTo: 'jenkins@example.com',
+      mimeType: 'text/html',
+      attachmentsPattern: 'scan.txt'
+      )
+    }
+  }
+}
+    
+}

@@ -1,5 +1,7 @@
 use keyist;
 
+use keyist;
+
 drop table if exists color;
 
 create table color
@@ -305,4 +307,4 @@ INSERT INTO keyist.oauth_client_details (client_id, resource_ids, client_secret,
 INSERT INTO keyist.product_category (id, name) VALUES (1, 'Test');
 INSERT INTO keyist.color (id, name, hex) VALUES (1, 'red', '#ff144b');
 INSERT INTO keyist.product (id, category_id, sku, name, url, long_desc, date_created, last_updated, unlimited) VALUES (1, 1, '000-0001', 'Test', 'test', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry''s standard dummy text ever since the 1500s. ', '2018-05-18 09:50:48', '2020-10-22 01:55:43', 1);
-INSERT INTO keyist.product_variant (id, product_id, color_id, width, height, price, composition, cargo_price, tax_percent, sell_count, stock, live, image, thumb) VALUES (1, 1, 1, '4cm', '10cm', 9.99, 'Copper 70%, Zinc 30%', 5, 10, 6, 1000, 1, 'image-url-here', 'image-url-here');
+INSERT INTO keyist.product_variant (id, product_id, color_id, width, height, price, composition, cargo_price, tax_percent, sell_count, stock, live, image, thumb) VALUES (1, 1, 1, '4cm', '10cm', 9.99, 'Copper 70%, Zinc 30%', 5, 10, 6, 1000, 1, 'https://picsum.photos/id/1/367/267', 'https://picsum.photos/id/1/367/267');
